@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"  
+"http://mybatis.org/dtd/mybatis-3-config.dtd">  
+<configuration>
+<!-- 下面属性书写是有一定的顺序的，如：typeAliases属性不可写在settings前面，顺序如下
+(properties?, settings?, typeAliases?, 
+typeHandlers?, objectFactory?,objectWrapperFactory?, 
+reflectorFactory?, plugins?, environments?, 
+databaseIdProvider?, mappers?) -->
+	<!-- 
+	properties属性都是可外部配置且可动态替换的 ,但是这个属性加载是有优先级的：
+	（1）在 properties 元素体内指定的属性首先被读取。
+（2）根据 properties 元素中的 resource 属性读取类路径下属性文件或根据 url 属性指定的路径读取属性文件，并覆盖已读取的同名属性。
+（3）读取作为方法参数传递的属性，并覆盖已读取的同名属性。	
+	-->
+  <properties resource="jdbc.properties">
+  	<!-- 下面的就是手动加载
+  	<property name="username" value="dev_user"/>
+  	<property name="password" value="F2Fa3!33TYyg"/>
+  	 -->
+  </properties>
+  
+  <!-- typeAlias也可以指定一个包名，例如 <typeAlias type="com.self.entity"/>，也就到这个包下面寻找对应的类名-->
+   <typeAliases>
+  	<typeAlias alias="User" type="com.self.entity.User"/>
+  	<typeAlias alias="Role" type="com.self.entity.Role"/>
+  </typeAliases>
+  
+  <environments default="development">
+    <environment id="development">
+   <!--  如果你正在使用 Spring + MyBatis，则没有必要配置事务管理器， 
+   因为 Spring 模块会使用自带的管理器来覆盖前面的配置。 -->
+      <transactionManager type="JDBC"/>
+      <!-- 
+        
+      （1）UNPOOLED– 这个数据源的实现只是每次被请求时打开和关闭连接。
+      虽然一点慢，它对在及时可用连接方面没有性能要求的简单应用程序是一个很好的选择。
+     （2）POOLED– 这种数据源的实现利用“池”的概念将 JDBC 连接对象组织起来，
+      避免了创建新的连接实例时所必需的初始化和认证时间。 
+      这是一种使得并发 Web 应用快速响应请求的流行处理方式。
+   （3）JNDI– 这个数据源的实现是为了能在如 EJB 或应用服务器这类容器中使用，
+   容器可以集中或在外部配置数据源，然后放置一个 JNDI 上下文的引用。
+       -->
+      <dataSource type="POOLED">
+        <property name="driver" value="${driver}"/>
+        <property name="url" value="${url}"/>
+        <property name="username" value="${username}"/>
+        <property name="password" value="${password}"/>
+      </dataSource>
+    </environment>
+  </environments>
+  
+ 
+  
+  <!-- 将mapper文件加载进来 -->
+  <mappers>
+  	<mapper resource="com/self/entity/UserMapper.xml"/>
+  	<mapper resource="com/self/entity/RoleMapper.xml"/>
+  </mappers>
+  
+  
+</configuration>

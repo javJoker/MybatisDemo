@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 
+namespace这是命名空间，它必须是唯一的，跟id类似的，
+我们调用mapper里面的sql语句都是通过namespace.id才能调用，id是sql语句的id
+如果有dao接口层和mapper之间映射的话，那么namespace的值为dao层中接口类的完整路径
+-->
+<mapper namespace="UserMapper">
+	<!-- 
+	column数据库表中的列名，property是实体类的属性名  
+	autoMapping:设置这个属性，MyBatis将会为这个ResultMap开启或者关闭自动映射.
+	也就是在下面resultmap中没有写出所有需要的数据库列名，设置这个属性后它会自动添加的
+	-->
+	<resultMap id="resultmap" type="User" autoMapping="true">
+		<id column="id" property="id"/>
+		<!-- 
+		关联有两种方法：
+		（1）嵌套查询:通过执行另外一个 SQL 映射语句来返回预期的复杂类型。
+		对于大型数据集合和列表将不会表现很好。 问题就是我们熟知的 “N+1 查询问题”。
+		（2）	嵌套结果:使用嵌套结果映射来处理重复的联合结果的子集。
+		  -->
+		<!-- association中的property是在user实体类中的参数名，javaType是该参数名的类型 -->
+		<association  property="role" javaType="Role">
+		  <id property="role_id" column="roleId"/>
+		  <result property="name" column="name"/>
+		</association>
+	</resultMap>
+	
+	<select id="show" resultMap="resultmap">
+		SELECT u.*,r.name FROM user u LEFT JOIN role r ON u.role_id = r.role_id
+	</select>
+	
+	<!--
+	useGeneratedKeys:使用 JDBC 的 getGeneratedKeys 方法来取出由数据库内部生成的主键
+	keyProperty:MyBatis 会通过 getGeneratedKeys 的返回值或者通过 insert 语句的 selectKey 子元素设置它的键值
+	  -->
+	<insert id="add" parameterType="User"
+	 useGeneratedKeys="true" keyProperty="id">
+	  insert into user (username,password,age)
+	  values (#{username},#{password},#{age})
+	</insert>
+	
+	<!-- <insert id="addlist"  useGeneratedKeys="true"
+	    keyProperty="id">
+	  insert into user (username, password,age) values
+	  <foreach item="item" collection="list" separator=",">
+	    (#{item.username}, #{item.password}, #{item.age})
+	  </foreach>
+	</insert> -->
+	
+	
+	<select id="showById" parameterType="User" resultMap="resultmap">
+		SELECT r.*,u.id,u.age,u.`password`,u.username FROM role r
+		LEFT JOIN user u ON r.role_id=u.role_id
+		<where>
+		<!--
+		(1) 如果第一个条件语句没有，只有第二个条件语句，sql执行语句
+		就会多出来一个and，在<where>中它会自动去掉
+		where 元素知道只有在一个以上的if条件有值的情况下才去插入“WHERE”子句。而且，若最后的内容是“AND”或“OR”开头的，where 元素也知道如何将他们去除。
+		(2)如果 where 元素没有按正常套路出牌，我们还是可以通过自定义 trim 元素来定制我们想要的功能。
+		<trim prefix="" prefixOverrides=" " suffixOverrides=" ">
+		  ... 
+		</trim>
+		prefixOverrides去掉前缀中的值，suffixOverrides去掉后缀中的值
+		(3)set 元素会动态前置 SET 关键字，同时也会消除无关的逗号，因为用了条件语句之后很可能就会在生成的赋值语句的后面留下这些逗号。
+		<update id="updateAuthorIfNecessary">
+		  update Author
+		    <set>
+		      <if test="username != null">username=#{username},</if>
+		      <if test="password != null">password=#{password},</if>
+		      <if test="email != null">email=#{email},</if>
+		      <if test="bio != null">bio=#{bio}</if>
+		    </set>
+		  where id=#{id}
+		</update>
+		 -->
+			<if test="id != null and id != ''">
+				id = #{id}
+			</if>
+			<if test="username != null and username != ''">
+				and username = #{username}
+			</if>
+		</where>
+	</select>
+	
+	<select id="showByIdName" parameterType="User" resultMap="resultmap">
+		SELECT r.*,u.id,u.age,u.`password`,u.username FROM role r
+		LEFT JOIN user u ON r.role_id=u.role_id
+		<where>
+			<choose>
+				<when test="id != null and id != ''">
+					id = #{id}
+				</when>
+				<when test="username != null and username != ''">
+					and username = #{username}
+				</when>
+				<otherwise>
+					and 1=1
+				</otherwise>
+			</choose>
+			<!-- <if test="username != null and username != ''">
+				username LIKE concat(concat('%',#{username}),'%')
+			</if> -->
+		</where>
+	</select>
+	
+	<!-- 
+	<select id="selectPostIn" resultType="domain.blog.Post">
+	  SELECT *
+	  FROM POST P
+	  WHERE ID in
+	  <foreach item="item" index="index" collection="list"
+	      open="(" separator="," close=")">
+	        #{item}
+	  </foreach>
+	</select>
+	
+	foreach:元素的功能是非常强大的，它允许你指定一个集合，声明可以用在元素体内的集合项和索引变量。
+	它也允许你指定开闭匹配的字符串以及在迭代中间放置分隔符。
+	注意 :你可以将任何可迭代对象（如列表、集合等）和任何的字典或者数组对象传递给foreach作为集合参数。
+	当使用可迭代对象或者数组时，index是当前迭代的次数，
+	item的值是本次迭代获取的元素。
+	当使用字典（或者Map.Entry对象的集合）时，index是键，item是值。
+	 -->
+	
+</mapper>

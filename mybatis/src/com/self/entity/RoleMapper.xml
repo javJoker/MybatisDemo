@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="RoleMapper">
+	<resultMap id="resultmap" type="Role">
+	  <id column="role_id" property="roleId" />
+	  <result column="name" property="name"/>
+	  <collection property="userList" ofType="User">
+	    <id column="id" property="id"/>
+	    <result column="username" property="username"/>
+	    <result column="password" property="password"/>
+	  </collection>
+	</resultMap>
+	
+	<select id="showRole" resultMap="resultmap">
+		SELECT r.*,u.id,u.age,u.`password`,
+		u.username FROM role r 
+		LEFT JOIN user u ON r.role_id=u.role_id
+	</select>
+</mapper>
